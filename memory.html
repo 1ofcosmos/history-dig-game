@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>유물 짝 맞추기</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #1b1410;
+    overflow: hidden;
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    user-select: none;
+  }
+  #stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  #timerBar {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    padding: 8px 22px;
+    border-radius: 999px;
+    font-size: clamp(18px, 2.6vw, 26px);
+    font-weight: bold;
+    letter-spacing: 1px;
+    z-index: 10;
+  }
+  #boardWrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 90px 16px 20px;
+    box-sizing: border-box;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: clamp(8px, 1.6vw, 18px);
+    width: min(94vw, 1100px);
+    height: min(80vh, 640px);
+  }
+  .card {
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(.4,.2,.2,1);
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .card.matched .card-inner { transform: rotateY(180deg); }
+  .card.matched .card-front { box-shadow: 0 0 0 4px #4caf50 inset; }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+  }
+  .card-back {
+    background:
+      repeating-linear-gradient(45deg, #2d5f7a 0 14px, #26516a 14px 28px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-back .diamond {
+    width: 34%;
+    height: 34%;
+    border: 3px solid rgba(255,255,255,0.55);
+    transform: rotate(45deg);
+    border-radius: 4px;
+  }
+  .card-front {
+    transform: rotateY(180deg);
+    background: #fffaf0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    border: 5px solid #ccc;
+    box-sizing: border-box;
+  }
+  .card-front.kind-q { border-color: #f0b400; }
+  .card-front.kind-a { border-color: #2f6fd6; }
+  .card-img {
+    flex: 0 0 55%;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    color: #3a2a15;
+    padding: 6px 8px;
+    overflow: hidden;
+    line-height: 1.25;
+  }
+  .card-front.no-image .card-text {
+    flex: 1;
+  }
+
+  #celebration {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(#5b4632, #3a2d20);
+    color: #fff;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 50;
+  }
+  #celebration.show { display: flex; }
+  #celebration h1 {
+    font-size: clamp(30px, 5vw, 52px);
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  }
+  #celebration p {
+    font-size: clamp(18px, 2.6vw, 26px);
+    margin-bottom: 30px;
+  }
+  #retryBtn {
+    padding: 16px 40px;
+    border: none;
+    border-radius: 999px;
+    background: #caa868;
+    color: #3a2a15;
+    font-size: clamp(18px, 2.4vw, 24px);
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+  }
+  #retryBtn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="timerBar">⏱ 0:00</div>
+  <div id="boardWrap">
+    <div id="board"></div>
+  </div>
+
+  <div id="celebration">
+    <h1>🎉 모두 맞혔어요!</h1>
+    <p id="finalTime"></p>
+    <button id="retryBtn">다시 하기</button>
+  </div>
+</div>
+
+<script src="pair-data.js"></script>
+<script>
+(function () {
+  const AUTO_FLIP_BACK_MS = 2000;
+
+  const board = document.getElementById("board");
+  const timerBar = document.getElementById("timerBar");
+  const celebration = document.getElementById("celebration");
+  const finalTimeEl = document.getElementById("finalTime");
+  const retryBtn = document.getElementById("retryBtn");
+
+  const LAST_ARRANGEMENT_KEY = "memoryLastArrangement_v1";
+
+  let cards = [];
+  let flipped = [];
+  let lockBoard = false;
+  let matchedCount = 0;
+  let totalPairs = 0;
+  let startTime = null;
+  let timerInterval = null;
+  let autoFlipBackTimer = null;
+
+  function buildDeck() {
+    const deck = [];
+    PAIR_DATA.forEach(function (pair, i) {
+      deck.push({ pairIndex: i, kind: "q", text: pair.문제, image: pair.문제사진 || "" });
+      deck.push({ pairIndex: i, kind: "a", text: pair.정답, image: pair.정답사진 || "" });
+    });
+    return deck;
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function arrangementKey(deck) {
+    return deck.map(function (c) { return c.pairIndex + c.kind; }).join(",");
+  }
+
+  function shuffledDeckAvoidingRepeat() {
+    const deck = buildDeck();
+    let lastKey = null;
+    try { lastKey = localStorage.getItem(LAST_ARRANGEMENT_KEY); } catch (e) {}
+    let result = shuffle(deck);
+    let tries = 0;
+    while (lastKey && arrangementKey(result) === lastKey && tries < 15) {
+      result = shuffle(deck);
+      tries++;
+    }
+    try { localStorage.setItem(LAST_ARRANGEMENT_KEY, arrangementKey(result)); } catch (e) {}
+    return result;
+  }
+
+  function fitText(el) {
+    const maxSize = parseInt(window.getComputedStyle(el).fontSize, 10) || 22;
+    let size = maxSize;
+    el.style.fontSize = size + "px";
+    let guard = 0;
+    while (el.scrollHeight > el.clientHeight && size > 11 && guard < 40) {
+      size -= 1;
+      el.style.fontSize = size + "px";
+      guard++;
+    }
+  }
+
+  function renderBoard() {
+    board.innerHTML = "";
+    cards.forEach(function (card, idx) {
+      const cardEl = document.createElement("div");
+      cardEl.className = "card";
+      cardEl.dataset.idx = idx;
+
+      const inner = document.createElement("div");
+      inner.className = "card-inner";
+
+      const back = document.createElement("div");
+      back.className = "card-face card-back";
+      const diamond = document.createElement("div");
+      diamond.className = "diamond";
+      back.appendChild(diamond);
+
+      const front = document.createElement("div");
+      front.className = "card-face card-front " + (card.kind === "q" ? "kind-q" : "kind-a") + (card.image ? "" : " no-image");
+
+      if (card.image) {
+        const img = document.createElement("img");
+        img.className = "card-img";
+        img.src = card.image;
+        img.onerror = function () {
+          img.remove();
+          front.classList.add("no-image");
+        };
+        front.appendChild(img);
+      }
+
+      const textEl = document.createElement("div");
+      textEl.className = "card-text";
+      textEl.textContent = card.text;
+      front.appendChild(textEl);
+
+      inner.appendChild(back);
+      inner.appendChild(front);
+      cardEl.appendChild(inner);
+      board.appendChild(cardEl);
+
+      cardEl.addEventListener("click", function () { onCardClick(cardEl, card); });
+
+      requestAnimationFrame(function () { fitText(textEl); });
+    });
+  }
+
+  function startTimerIfNeeded() {
+    if (startTime !== null) return;
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimerDisplay, 250);
+  }
+
+  function updateTimerDisplay() {
+    const elapsed = startTime === null ? 0 : Date.now() - startTime;
+    const totalSeconds = Math.floor(elapsed / 1000);
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    timerBar.textContent = "⏱ " + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function clearAutoFlipBack() {
+    if (autoFlipBackTimer) {
+      clearTimeout(autoFlipBackTimer);
+      autoFlipBackTimer = null;
+    }
+  }
+
+  function onCardClick(cardEl, card) {
+    if (lockBoard) return;
+    if (cardEl.classList.contains("flipped") || cardEl.classList.contains("matched")) return;
+    if (flipped.length >= 2) return;
+
+    startTimerIfNeeded();
+    cardEl.classList.add("flipped");
+    flipped.push({ el: cardEl, card: card });
+
+    if (flipped.length === 1) {
+      clearAutoFlipBack();
+      autoFlipBackTimer = setTimeout(function () {
+        autoFlipBackTimer = null;
+        if (flipped.length === 1 && flipped[0].el === cardEl) {
+          cardEl.classList.remove("flipped");
+          flipped = [];
+        }
+      }, AUTO_FLIP_BACK_MS);
+    } else if (flipped.length === 2) {
+      clearAutoFlipBack();
+      lockBoard = true;
+      setTimeout(resolveFlip, 700);
+    }
+  }
+
+  function resolveFlip() {
+    const [first, second] = flipped;
+    const isMatch = first.card.pairIndex === second.card.pairIndex && first.card.kind !== second.card.kind;
+
+    if (isMatch) {
+      first.el.classList.add("matched");
+      second.el.classList.add("matched");
+      matchedCount++;
+    } else {
+      first.el.classList.remove("flipped");
+      second.el.classList.remove("flipped");
+    }
+
+    flipped = [];
+    lockBoard = false;
+
+    if (matchedCount >= totalPairs) {
+      finishGame();
+    }
+  }
+
+  function finishGame() {
+    stopTimer();
+    const elapsed = startTime === null ? 0 : Date.now() - startTime;
+    const totalSeconds = Math.floor(elapsed / 1000);
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    finalTimeEl.textContent = "걸린 시간: " + m + ":" + (s < 10 ? "0" : "") + s;
+    celebration.classList.add("show");
+  }
+
+  function startNewRound() {
+    stopTimer();
+    clearAutoFlipBack();
+    startTime = null;
+    matchedCount = 0;
+    flipped = [];
+    lockBoard = false;
+    celebration.classList.remove("show");
+    timerBar.textContent = "⏱ 0:00";
+
+    cards = shuffledDeckAvoidingRepeat();
+    totalPairs = PAIR_DATA.length;
+    renderBoard();
+  }
+
+  retryBtn.addEventListener("click", startNewRound);
+
+  startNewRound();
+})();
+</script>
+</body>
+</html>
