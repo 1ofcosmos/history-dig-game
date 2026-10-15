@@ -2,9 +2,12 @@
 // map: "goguryeo" 또는 "balhae" 중 하나
 // x, y: 땅속에 묻혀서 힌트가 보일 타일 좌표 (0부터 시작, 지도마다 다름)
 const ARTIFACTS = [
-  { id: "giwa_g", name: "기와", map: "goguryeo", image: "assets/images/giwa_g.png", x: 2, y: 2 },
-  { id: "ondol_g", name: "온돌 터", map: "goguryeo", image: "assets/images/ondol_g.png", x: 6, y: 4 },
-  { id: "byeokhwa_g", name: "고분벽화 조각", map: "goguryeo", image: "assets/images/byeokhwa_g.png", x: 8, y: 1 },
+  { id: "giwa_g", name: "기와", map: "goguryeo", image: "assets/images/giwa_g.jpg", x: 2, y: 2 },
+  { id: "ondol_g", name: "온돌", map: "goguryeo", image: "assets/images/ondol_g.jpg", x: 6, y: 4 },
+  { id: "geumdong_g", name: "금동 연가 7년명 여래입상", map: "goguryeo", image: "assets/images/geumdong.jpg", x: 8, y: 1 },
+  { id: "gwanggaeto_g", name: "광개토대왕릉비", map: "goguryeo", image: "assets/images/gwanggaeto.jpg", x: 1, y: 5 },
+  { id: "gwanjangsik_g", name: "관장식", map: "goguryeo", image: "assets/images/gwanjangsik.jpg", x: 3, y: 4 },
+  { id: "chiikawa_g", name: "치이카와", map: "goguryeo", image: "assets/images/chiikawa.webp", x: 5, y: 1 },
 
   { id: "giwa_b", name: "기와", map: "balhae", image: "assets/images/giwa.jpg", x: 3, y: 1 },
   { id: "ondol_b", name: "온돌", map: "balhae", image: "assets/images/ondol.jpg", x: 1, y: 4 },
@@ -23,11 +26,11 @@ const SPOTS = {
   goguryeo: [
     { x: 2, y: 2, artifactId: "giwa_g" },
     { x: 6, y: 4, artifactId: "ondol_g" },
-    { x: 8, y: 1, artifactId: "byeokhwa_g" },
+    { x: 8, y: 1, artifactId: "geumdong_g" },
     { x: 4, y: 5, artifactId: "giwa_g" },
-    { x: 1, y: 5, artifactId: "ondol_g" },
-    { x: 3, y: 4, artifactId: "byeokhwa_g" },
-    { x: 5, y: 1, artifactId: "byeokhwa_g" }
+    { x: 1, y: 5, artifactId: "gwanggaeto_g" },
+    { x: 3, y: 4, artifactId: "gwanjangsik_g" },
+    { x: 5, y: 1, artifactId: "chiikawa_g" }
   ],
   balhae: [
     { x: 3, y: 1, artifactId: "giwa_b" },
