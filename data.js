@@ -6,10 +6,12 @@ const ARTIFACTS = [
   { id: "ondol_g", name: "온돌 터", map: "goguryeo", image: "assets/images/ondol_g.png", x: 6, y: 4 },
   { id: "byeokhwa_g", name: "고분벽화 조각", map: "goguryeo", image: "assets/images/byeokhwa_g.png", x: 8, y: 1 },
 
-  { id: "giwa_b", name: "기와", map: "balhae", image: "assets/images/giwa_b.png", x: 3, y: 1 },
-  { id: "ondol_b", name: "온돌 터", map: "balhae", image: "assets/images/ondol_b.png", x: 1, y: 4 },
-  { id: "seokdeung_b", name: "석등", map: "balhae", image: "assets/images/seokdeung_b.png", x: 7, y: 3 },
-  { id: "wadang_b", name: "연꽃무늬 와당", map: "balhae", image: "assets/images/wadang_b.png", x: 5, y: 5 }
+  { id: "giwa_b", name: "기와", map: "balhae", image: "assets/images/giwa.jpg", x: 3, y: 1 },
+  { id: "ondol_b", name: "온돌", map: "balhae", image: "assets/images/ondol.jpg", x: 1, y: 4 },
+  { id: "sukdeung_b", name: "석등", map: "balhae", image: "assets/images/sukdeung.jpg", x: 7, y: 3 },
+  { id: "samchahyangro_b", name: "발해 삼채 향로", map: "balhae", image: "assets/images/samchahyangro.png", x: 5, y: 5 },
+  { id: "ibul_b", name: "이불병좌상", map: "balhae", image: "assets/images/ibul.png", x: 2, y: 3 },
+  { id: "rakko_b", name: "랏코", map: "balhae", image: "assets/images/rakko.webp", x: 4, y: 2 }
 ];
 
 // 맵별 발굴 스팟 배치. 모든 스팟에는 실제로 존재하는 유물 id를 적어야 하며,
@@ -30,11 +32,11 @@ const SPOTS = {
   balhae: [
     { x: 3, y: 1, artifactId: "giwa_b" },
     { x: 1, y: 4, artifactId: "ondol_b" },
-    { x: 7, y: 3, artifactId: "seokdeung_b" },
-    { x: 5, y: 5, artifactId: "wadang_b" },
+    { x: 7, y: 3, artifactId: "sukdeung_b" },
+    { x: 5, y: 5, artifactId: "samchahyangro_b" },
     { x: 8, y: 1, artifactId: "giwa_b" },
-    { x: 2, y: 3, artifactId: "seokdeung_b" },
-    { x: 4, y: 2, artifactId: "wadang_b" }
+    { x: 2, y: 3, artifactId: "ibul_b" },
+    { x: 4, y: 2, artifactId: "rakko_b" }
   ]
 };
 
