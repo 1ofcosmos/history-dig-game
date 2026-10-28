@@ -30,7 +30,7 @@ const SPOTS = {
     { x: 4, y: 5, artifactId: "giwa_g" },
     { x: 1, y: 5, artifactId: "gwanggaeto_g" },
     { x: 3, y: 4, artifactId: "gwanjangsik_g" },
-    { x: 5, y: 1, artifactId: "chiikawa_g" }
+    { x: 5, y: 1, artifactId: "ondol_g" }
   ],
   balhae: [
     { x: 3, y: 1, artifactId: "giwa_b" },
@@ -39,7 +39,7 @@ const SPOTS = {
     { x: 5, y: 5, artifactId: "samchahyangro_b" },
     { x: 8, y: 1, artifactId: "giwa_b" },
     { x: 2, y: 3, artifactId: "ibul_b" },
-    { x: 4, y: 2, artifactId: "rakko_b" }
+    { x: 4, y: 2, artifactId: "ondol_b" }
   ]
 };
 
